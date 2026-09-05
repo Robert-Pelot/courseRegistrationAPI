@@ -1,0 +1,15 @@
+**/bin/
+**/obj/
+.vs/
+.vscode/
+.idea/
+TestResults/
+coverage/
+*.user
+*.suo
+*.log
+*.db
+*.db-shm
+*.db-wal
+.env
+appsettings.Local.json
