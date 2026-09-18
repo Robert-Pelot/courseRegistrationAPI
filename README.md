@@ -14,6 +14,12 @@ A REST API for managing courses, institutional core goals, course-to-goal assign
 - Service tests and HTTP integration tests
 - GitHub Actions build and test workflow
 
+## Portfolio case study
+
+The source code here is paired with a portfolio case study that explains how the project grew from basic CRUD endpoints into a layered API architecture built around repositories, services, controllers, relational data, testing, and user stories.
+
+[Read **From CRUD Endpoints to an API Architecture**](https://mystorageaccountusasa.z13.web.core.windows.net/projects/crud-to-api-architecture.html)
+
 ## Requirements
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
@@ -127,4 +133,3 @@ database/schema.sql
 ## Project history
 
 This standalone portfolio edition evolved from a CSCI 330 course project completed by Robert Pelot in Spring 2026. The original GitHub Classroom repository and its commit history remain under the CCU Computing organization; classroom scaffolding and superseded copies were intentionally omitted here.
-
