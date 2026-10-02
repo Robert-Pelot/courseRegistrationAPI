@@ -1,31 +1,59 @@
 # Course Registration API
 
-A REST API for managing courses, institutional core goals, course-to-goal assignments, and semester offerings. The project demonstrates layered ASP.NET Core design, dependency injection, input validation, standardized error responses, MySQL persistence, and automated testing.
+[![CI](https://github.com/Robert-Pelot/courseRegistrationAPI/actions/workflows/ci.yml/badge.svg)](https://github.com/Robert-Pelot/courseRegistrationAPI/actions/workflows/ci.yml)
+[![.NET 10](https://img.shields.io/badge/.NET-10-512BD4.svg)](https://dotnet.microsoft.com/)
 
-## Highlights
+A REST API for managing courses, institutional core goals, course-to-goal assignments, and semester offerings. The project demonstrates layered ASP.NET Core design, dependency injection, input validation, standardized error responses, optional MySQL persistence, and automated testing.
 
-- Course create, read, update, and delete operations
-- Core-goal management and course assignments
-- Offering searches by semester, core goal, and department
+**Portfolio case study:** [From CRUD Endpoints to an API Architecture](https://mystorageaccountusasa.z13.web.core.windows.net/projects/crud-to-api-architecture.html)  
+**Portfolio:** [Life in Your 50s — Projects](https://mystorageaccountusasa.z13.web.core.windows.net/projects.html)
+
+## 30-second overview
+
+| | |
+|---|---|
+| **Problem** | Manage courses, core goals, assignments, and semester offerings through a consistent API |
+| **Stack** | C#, ASP.NET Core, .NET 10, MySQL |
+| **Architecture** | Controllers → services → repositories → in-memory or MySQL persistence |
+| **API behavior** | Validation, conflict handling, normalized identifiers, standardized problem details |
+| **Quality** | Service tests, HTTP integration tests, GitHub Actions CI |
+| **Portfolio value** | Shows how a basic CRUD project evolved into a layered API architecture |
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Client[API client / Postman] --> Controllers[Controllers]
+    Controllers --> Services[Application services]
+    Services --> Repositories[Repository interfaces]
+    Repositories --> Memory[In-memory repository]
+    Repositories --> MySQL[MySQL repository]
+    MySQL --> Database[(MySQL database)]
+    Tests[Service + HTTP tests] -. verify .-> Services
+    Tests -. verify .-> Controllers
+```
+
+The default in-memory repository keeps the project easy to run and test. The MySQL implementation demonstrates the same application behavior against relational persistence without changing the controller/service contract.
+
+## What this demonstrates
+
+- RESTful CRUD endpoint design and HTTP status handling
+- Layered application structure with controllers, services, and repositories
+- Dependency injection and interchangeable persistence implementations
+- Input validation and RFC 9457-style problem details
 - Case-insensitive, whitespace-normalized identifiers
-- RFC 9457-style problem details for validation, conflict, and missing-resource responses
-- In-memory storage for an immediate zero-configuration demo
-- Optional MySQL persistence with parameterized asynchronous queries
-- Service tests and HTTP integration tests
-- GitHub Actions build and test workflow
+- Relational modeling for courses, core goals, assignments, and offerings
+- Parameterized asynchronous MySQL queries
+- Transactional multi-row assignments
+- Automated service and HTTP integration testing
+- GitHub Actions continuous integration
 
-## Portfolio case study
+## Run locally
 
-The source code here is paired with a portfolio case study that explains how the project grew from basic CRUD endpoints into a layered API architecture built around repositories, services, controllers, relational data, testing, and user stories.
-
-[Read **From CRUD Endpoints to an API Architecture**](https://mystorageaccountusasa.z13.web.core.windows.net/projects/crud-to-api-architecture.html)
-
-## Requirements
+### Requirements
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - Optional: MySQL 8 or a compatible server
-
-## Run locally
 
 The default in-memory mode includes a small sample data set and does not require a database.
 
@@ -43,7 +71,9 @@ dotnet build tests/CourseRegistration.Api.Tests/CourseRegistration.Api.Tests.csp
 dotnet test tests/CourseRegistration.Api.Tests/CourseRegistration.Api.Tests.csproj --configuration Release --no-build
 ```
 
-## Endpoints
+The CI workflow repeats the build and test checks on GitHub.
+
+## API endpoints
 
 | Method | Path | Purpose |
 | --- | --- | --- |
@@ -62,13 +92,7 @@ dotnet test tests/CourseRegistration.Api.Tests/CourseRegistration.Api.Tests.cspr
 
 Course names, goal IDs, and department codes are normalized to uppercase. Leading, trailing, and repeated spaces in identifiers are removed.
 
-## Examples
-
-List the seeded courses:
-
-```bash
-curl http://localhost:5080/api/courses
-```
+### Example
 
 Create a course:
 
@@ -89,7 +113,7 @@ Filter Spring 2026 offerings to the CSCI department:
 curl "http://localhost:5080/api/offerings?semester=Spring%202026&department=CSCI"
 ```
 
-## Use MySQL
+## Optional MySQL persistence
 
 1. Create and seed the schema:
 
@@ -99,15 +123,22 @@ curl "http://localhost:5080/api/offerings?semester=Spring%202026&department=CSCI
 
 2. Supply the provider and connection string through environment variables. Do not commit database credentials.
 
-   PowerShell:
-
    ```powershell
    $env:Storage__Provider = "MySql"
    $env:ConnectionStrings__CourseRegistration = "Server=localhost;Database=course_registration;User ID=YOUR_USER;Password=YOUR_PASSWORD"
    dotnet run --project src/CourseRegistration.Api/CourseRegistration.Api.csproj
    ```
 
-The application uses a new pooled connection for each repository operation. All SQL values are passed as parameters, and multi-row course assignments run inside a transaction.
+The application uses a new pooled connection for each repository operation. SQL values are passed as parameters, and multi-row course assignments run inside a transaction.
+
+## Design decisions and tradeoffs
+
+- **In-memory first:** the zero-configuration default makes the API immediately runnable and keeps automated tests simple.
+- **Repository abstraction:** the application can switch between in-memory and MySQL persistence without changing endpoint behavior.
+- **Service layer:** validation and application rules live outside controllers so they can be tested independently.
+- **Normalized identifiers:** course names, goal IDs, and department codes are normalized to reduce accidental duplicates and inconsistent queries.
+- **Parameterized SQL:** database values are never composed directly into SQL strings.
+- **No authentication yet:** authentication and authorization are intentionally outside the current project scope rather than being represented as production-ready controls.
 
 ## Project structure
 
@@ -123,13 +154,15 @@ tests/CourseRegistration.Api.Tests/
 database/schema.sql
 ```
 
-## Design notes
+## Current limitations
 
 - In-memory data resets whenever the process restarts.
-- The MySQL schema is supplied, but a MySQL server is not required for the default demo or automated test suite.
-- Authentication and authorization are intentionally outside this project's current scope.
-- Production deployments should use a secret manager or protected environment variables for the connection string.
+- A MySQL server is optional and is not required for the automated test suite.
+- Authentication and authorization are not implemented.
+- Production deployment would require protected secrets, production database configuration, monitoring, and additional operational controls.
 
 ## Project history
 
-This standalone portfolio edition evolved from a CSCI 330 course project completed by Robert Pelot in Spring 2026. The original GitHub Classroom repository and its commit history remain under the CCU Computing organization; classroom scaffolding and superseded copies were intentionally omitted here.
+This standalone portfolio edition evolved from a CSCI 330 course project completed in Spring 2026. The original GitHub Classroom repository and its commit history remain under the CCU Computing organization; classroom scaffolding and superseded copies were intentionally omitted from this portfolio version.
+
+The deeper design story is documented in the accompanying portfolio case study: [From CRUD Endpoints to an API Architecture](https://mystorageaccountusasa.z13.web.core.windows.net/projects/crud-to-api-architecture.html).
